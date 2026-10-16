@@ -36,7 +36,10 @@ export class WclapRuntime {
     moduleUrl: string,
     pluginId?: string,
   ): Promise<ClapNode> {
-    const runtimeModulePath = '/runtime/clap-audionode/clap-audionode.mjs'
+    const runtimeModulePath = new URL(
+      `${import.meta.env.BASE_URL}runtime/clap-audionode/clap-audionode.mjs`,
+      window.location.href,
+    ).href
     const imported = await import(/* @vite-ignore */ runtimeModulePath)
     const ClapAudioNode = imported.default as new (options: {
       url: string

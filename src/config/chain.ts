@@ -1,3 +1,5 @@
+const kBaseUrl = import.meta.env.BASE_URL
+
 export type PluginRole = 'note-fx' | 'instrument' | 'audio-fx'
 
 export type ChainPluginConfig = {
@@ -14,7 +16,7 @@ export const kChainConfig: { plugins: ChainPluginConfig[] } = {
       id: 'synple',
       name: 'Synple',
       role: 'instrument',
-      moduleUrl: '/plugins/synple.wclap.wasm',
+      moduleUrl: `${kBaseUrl}plugins/synple.wclap.wasm`,
     },
   ],
 }
