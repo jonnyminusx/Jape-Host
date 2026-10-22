@@ -62,14 +62,15 @@ export class WclapRuntime {
       filePrefix: `${pageProxy.prefix}${frameId}/file`,
       resourcePrefix: `${pageProxy.prefix}${frameId}/get_resource`,
     })
+    iframe.id = frameId
     ;(iframe as unknown as Record<symbol, (path: string) => Promise<unknown>>)[
       pageProxy.symbol
     ] = async (path: string) => {
       if (path.startsWith('/file/')) {
-        return node.getFile(path.slice('/file/'.length))
+        return node.getFile(path.slice('/file'.length))
       }
       if (path.startsWith('/get_resource/')) {
-        return node.getResource(path.slice('/get_resource/'.length))
+        return node.getResource(path.slice('/get_resource'.length))
       }
       return null
     }
