@@ -8,9 +8,10 @@
     "prepare:synple": "bash scripts/sync-synple-wasm.sh",
     "prepare:all": "npm run prepare:runtime && npm run prepare:synple",
     "dev": "vite",
-    "build": "npm run prepare:all && tsc -b && vite build",
+    "build": "npm run prepare:all && npm test && tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -23,6 +24,7 @@
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vitest": "^5.0.5"
   }
 }
