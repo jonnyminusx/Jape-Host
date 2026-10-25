@@ -28,15 +28,15 @@ button {
 }
 
 .keyboard {
-  display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.keyboard button {
-  min-height: 2.5rem;
-  min-width: 3rem;
+.keyboard svg {
+  width: 100%;
+  height: auto;
+  max-width: 60rem;
 }
 
 .plugin-panel {

@@ -10,6 +10,7 @@ import {
 import { MidiBus } from './midi/midiBus'
 import { bindComputerKeyboard } from './midi/sources/computerKeyboard'
 import { connectWebMidi } from './midi/sources/webMidi'
+import { Keyboard } from './keyboard/Keyboard'
 import './App.css'
 
 function App() {
@@ -57,8 +58,8 @@ function App() {
         const analyser = audioContext.createAnalyser()
         analyser.fftSize = 2048
         chain.output.connect(analyser)
-        ;(window as Window & { __japeHostAnalyser?: AnalyserNode }).__japeHostAnalyser =
-          analyser
+          ; (window as Window & { __japeHostAnalyser?: AnalyserNode }).__japeHostAnalyser =
+            analyser
         chainRef.current = chain
 
         for (const plugin of chain.plugins) {
@@ -152,17 +153,12 @@ function App() {
       </section>
 
       <section className="keyboard">
-        {[60, 62, 64, 65, 67, 69, 71, 72].map((note) => (
-          <button
-            key={note}
-            type="button"
-            onPointerDown={() => playNote(note)}
-            onPointerUp={() => releaseNote(note)}
-            onPointerLeave={() => releaseNote(note)}
-          >
-            {note}
-          </button>
-        ))}
+        <Keyboard
+          firstNote={48}
+          lastNote={72}
+          onNoteDown={playNote}
+          onNoteUp={releaseNote}
+        />
       </section>
 
       {kChainConfig.plugins.map((plugin) => (
