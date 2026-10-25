@@ -18,7 +18,7 @@ function App() {
   const chainRef = useRef<BuiltChain | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const panelRefs = useRef<Record<string, HTMLDivElement | null>>({})
-  const activeNotesRef = useRef<Set<number>>(new Set())
+  const [activeNotes, setActiveNotes] = useState<ReadonlySet<number>>(new Set())
   const [status, setStatus] = useState('Click start to load the host.')
   const [started, setStarted] = useState(false)
   const [midiInputs, setMidiInputs] = useState<string[]>([])
@@ -30,7 +30,7 @@ function App() {
       return
     }
     midiTarget.sendEvents(createClapPanicEvents())
-    activeNotesRef.current.clear()
+    setActiveNotes(new Set())
   }
 
   useEffect(() => {
@@ -114,7 +114,17 @@ function App() {
     if (!midiTarget) {
       return
     }
-    activeNotesRef.current.add(note)
+
+    setActiveNotes(prev => {
+      if (prev.has(note)) {
+        return prev
+      }
+
+      const next = new Set(prev)
+      next.add(note)
+      return next
+    })
+
     midiTarget.sendEvents([createClapNoteOnEvent(note)])
   }
 
@@ -123,10 +133,17 @@ function App() {
     if (!midiTarget) {
       return
     }
-    if (!activeNotesRef.current.has(note)) {
-      return
-    }
-    activeNotesRef.current.delete(note)
+
+    setActiveNotes(prev => {
+      if (!prev.has(note)) {
+        return prev
+      }
+
+      const next = new Set(prev)
+      next.delete(note)
+      return next
+    })
+
     midiTarget.sendEvents([createClapNoteOffEvent(note)])
   }
 
@@ -156,6 +173,7 @@ function App() {
         <Keyboard
           firstNote={48}
           lastNote={72}
+          activeNotes={activeNotes}
           onNoteDown={playNote}
           onNoteUp={releaseNote}
         />
