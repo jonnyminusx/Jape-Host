@@ -37,6 +37,8 @@ button {
   width: 100%;
   height: auto;
   max-width: 60rem;
+  touch-action: none;
+  user-select: none;
 }
 
 .plugin-panel {

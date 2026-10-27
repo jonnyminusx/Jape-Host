@@ -23,6 +23,7 @@ function App() {
   const [started, setStarted] = useState(false)
   const [midiInputs, setMidiInputs] = useState<string[]>([])
   const midiBus = useMemo(() => new MidiBus(), [])
+  const [panicCount, setPanicCount] = useState(0)
 
   const panic = () => {
     const midiTarget = chainRef.current?.midiTarget
@@ -31,6 +32,7 @@ function App() {
     }
     midiTarget.sendEvents(createClapPanicEvents())
     setActiveNotes(new Set())
+    setPanicCount(c => c + 1)
   }
 
   useEffect(() => {
@@ -110,11 +112,6 @@ function App() {
   }, [started, midiBus])
 
   const playNote = (note: number) => {
-    const midiTarget = chainRef.current?.midiTarget
-    if (!midiTarget) {
-      return
-    }
-
     setActiveNotes(prev => {
       if (prev.has(note)) {
         return prev
@@ -122,18 +119,14 @@ function App() {
 
       const next = new Set(prev)
       next.add(note)
+
       return next
     })
 
-    midiTarget.sendEvents([createClapNoteOnEvent(note)])
+    chainRef.current?.midiTarget?.sendEvents([createClapNoteOnEvent(note)])
   }
 
   const releaseNote = (note: number) => {
-    const midiTarget = chainRef.current?.midiTarget
-    if (!midiTarget) {
-      return
-    }
-
     setActiveNotes(prev => {
       if (!prev.has(note)) {
         return prev
@@ -141,10 +134,11 @@ function App() {
 
       const next = new Set(prev)
       next.delete(note)
+
       return next
     })
 
-    midiTarget.sendEvents([createClapNoteOffEvent(note)])
+    chainRef.current?.midiTarget?.sendEvents([createClapNoteOffEvent(note)])
   }
 
   return (
@@ -174,6 +168,7 @@ function App() {
           firstNote={48}
           lastNote={72}
           activeNotes={activeNotes}
+          panicCount={panicCount}
           onNoteDown={playNote}
           onNoteUp={releaseNote}
         />
