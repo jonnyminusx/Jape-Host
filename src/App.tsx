@@ -111,7 +111,7 @@ function App() {
     }
   }, [started, midiBus])
 
-  const playNote = (note: number) => {
+  const playNote = (note: number, velocity: number) => {
     setActiveNotes(prev => {
       if (prev.has(note)) {
         return prev
@@ -123,7 +123,7 @@ function App() {
       return next
     })
 
-    chainRef.current?.midiTarget?.sendEvents([createClapNoteOnEvent(note)])
+    chainRef.current?.midiTarget?.sendEvents([createClapNoteOnEvent(note, velocity)])
   }
 
   const releaseNote = (note: number) => {

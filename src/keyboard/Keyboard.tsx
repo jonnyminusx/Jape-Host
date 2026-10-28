@@ -1,25 +1,33 @@
 import { useRef, useEffect } from 'react'
 import { isBlackColour, buildKeyboardSpec, type Key } from "./layout";
+import { calculateVelocity } from "./pointer"
 
 export type ActiveNotes = ReadonlySet<number>;
 type NoteHandler = (note: number) => void;
 type PointerHandler = (pointer: number) => void;
-type NoteAndPointerHandler = (note: number, pointer: number) => void;
+type NoteVelocityHandler = (note: number, velocity: number) => void;
+type NoteVelocityPointerHandler = (note: number, velocity: number, pointer: number) => void;
 
 interface KeyboardProps {
     firstNote: number;
     lastNote: number;
     activeNotes: ActiveNotes;
     panicCount: number;
-    onNoteDown: NoteHandler;
+    onNoteDown: NoteVelocityHandler;
     onNoteUp: NoteHandler;
 }
 
 interface KeyRectProps {
     keyData: Key;
     isActive: boolean;
-    onNoteDown: NoteAndPointerHandler;
+    onNoteDown: NoteVelocityPointerHandler;
     onNoteUp: PointerHandler;
+}
+
+function calculateVelocityFromEvent(event: React.PointerEvent<SVGRectElement>) {
+    const y = event.clientY;
+    const bb = event.currentTarget.getBoundingClientRect();
+    return calculateVelocity(y, bb.top, bb.height);
 }
 
 function KeyRect({ keyData, isActive, onNoteDown, onNoteUp }: KeyRectProps) {
@@ -38,7 +46,7 @@ function KeyRect({ keyData, isActive, onNoteDown, onNoteUp }: KeyRectProps) {
                     return;
                 }
                 event.currentTarget.setPointerCapture(event.pointerId)
-                onNoteDown(keyData.note, event.pointerId)
+                onNoteDown(keyData.note, calculateVelocityFromEvent(event), event.pointerId)
             }}
             onPointerUp={(event) => onNoteUp(event.pointerId)}
             onPointerCancel={(event) => onNoteUp(event.pointerId)}
@@ -47,7 +55,7 @@ function KeyRect({ keyData, isActive, onNoteDown, onNoteUp }: KeyRectProps) {
         />);
 }
 
-function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteAndPointerHandler, onNoteUp: PointerHandler) {
+function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteVelocityPointerHandler, onNoteUp: PointerHandler) {
     return keys.map(k => (<KeyRect
         key={k.note}
         keyData={k}
@@ -76,7 +84,7 @@ export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteD
     const whiteKeys = spec.keys.filter(k => !isBlackColour(k.colour));
     const blackKeys = spec.keys.filter(k => isBlackColour(k.colour));
 
-    const onNoteDownWrapper: NoteAndPointerHandler = (note: number, pointerId: number) => {
+    const onNoteDownWrapper: NoteVelocityPointerHandler = (note: number, velocity: number, pointerId: number) => {
         const onNoteDownRequired = !noteIsPointedTo(note, pointerToHeldNote.current);
 
         const potentiallyOrphanedNote = pointerToHeldNote.current.get(pointerId);
@@ -89,7 +97,7 @@ export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteD
 
         pointerToHeldNote.current.set(pointerId, note);
         if (onNoteDownRequired) {
-            onNoteDown(note);
+            onNoteDown(note, velocity);
         }
     }
 
