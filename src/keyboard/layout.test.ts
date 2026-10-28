@@ -6,22 +6,22 @@ interface IsBlackCase {
     colour: KeyColour;
 }
 
-const cases: IsBlackCase[] = [
-    { note: 60, colour: "white" }, // C
-    { note: 61, colour: "black" }, // C#
-    { note: 62, colour: "white" }, // D
-    { note: 63, colour: "black" }, // D#
-    { note: 64, colour: "white" }, // E
-    { note: 65, colour: "white" }, // F
-    { note: 66, colour: "black" }, // F#
-    { note: 67, colour: "white" }, // G
-    { note: 68, colour: "black" }, // G#
-    { note: 69, colour: "white" }, // A
-    { note: 70, colour: "black" }, // A#
-    { note: 71, colour: "white" }, // B
-];
-
 describe('isBlackKey', () => {
+    const cases: IsBlackCase[] = [
+        { note: 60, colour: "white" }, // C
+        { note: 61, colour: "black" }, // C#
+        { note: 62, colour: "white" }, // D
+        { note: 63, colour: "black" }, // D#
+        { note: 64, colour: "white" }, // E
+        { note: 65, colour: "white" }, // F
+        { note: 66, colour: "black" }, // F#
+        { note: 67, colour: "white" }, // G
+        { note: 68, colour: "black" }, // G#
+        { note: 69, colour: "white" }, // A
+        { note: 70, colour: "black" }, // A#
+        { note: 71, colour: "white" }, // B
+    ];
+
     test.each(cases)('note $note is $colour', ({ note, colour }) => {
         expect(isBlackKey(note)).toBe(isBlackColour(colour));
     });
