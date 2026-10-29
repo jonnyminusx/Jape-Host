@@ -10,7 +10,7 @@ v1 hosts Synple only, but plugin order and roles are declared in [`chain.ts`](./
 
 - [`runtime.ts`](./src/engine/runtime.ts): thin adapter over WebCLAP `clap-audionode`.
 - [`chain.ts`](./src/engine/chain.ts): validates chain topology and wires audio/event routing.
-- [`midi/`](./src/midi/): MIDI bus + sources (Web MIDI + computer keyboard + on-screen keyboard).
+- [`midi/`](./src/midi/): CLAP MIDI event helpers used for on-screen keyboard notes and panic.
 - Per-plugin CLAP webviews are shown in dedicated panels.
 
 ## Runtime fetch policy
