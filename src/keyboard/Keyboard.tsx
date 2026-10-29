@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { isBlackColour, buildKeyboardSpec, type Key } from "./layout";
 import { calculateVelocity } from "./pointer"
 
@@ -74,10 +74,11 @@ function noteIsPointedTo(note: number, map: Map<number, number>): boolean {
 }
 
 export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteDown, onNoteUp }: KeyboardProps) {
-    const pointerToHeldNote = useRef<Map<number, number>>(new Map())
+    const [computerKeyboardEnabled, setComputerKeyboardEnabled] = useState<boolean>(true);
+    const pointerToHeldNote = useRef<Map<number, number>>(new Map());
 
     useEffect(() => {
-        pointerToHeldNote.current.clear()
+        pointerToHeldNote.current.clear();
     }, [panicCount])
 
     const spec = buildKeyboardSpec(firstNote, lastNote);
@@ -113,9 +114,15 @@ export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteD
     }
 
     return (
-        <svg viewBox={`${spec.viewBox.x} ${spec.viewBox.y} ${spec.viewBox.width} ${spec.viewBox.height}`}>
-            {renderKeys(whiteKeys, activeNotes, onNoteDownWrapper, onNoteUpWrapper)}
-            {renderKeys(blackKeys, activeNotes, onNoteDownWrapper, onNoteUpWrapper)}
-        </svg>
+        <>
+            <label>
+                <input type="checkbox" checked={computerKeyboardEnabled} onChange={e => setComputerKeyboardEnabled(e.target.checked)} />
+                Computer Keyboard
+            </label><br /><br />
+            <svg viewBox={`${spec.viewBox.x} ${spec.viewBox.y} ${spec.viewBox.width} ${spec.viewBox.height}`}>
+                {renderKeys(whiteKeys, activeNotes, onNoteDownWrapper, onNoteUpWrapper)}
+                {renderKeys(blackKeys, activeNotes, onNoteDownWrapper, onNoteUpWrapper)}
+            </svg>
+        </>
     );
 }
