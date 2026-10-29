@@ -118,7 +118,7 @@ export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteD
             <label>
                 <input type="checkbox" checked={computerKeyboardEnabled} onChange={e => setComputerKeyboardEnabled(e.target.checked)} />
                 Computer Keyboard
-            </label><br /><br />
+            </label>
             <svg viewBox={`${spec.viewBox.x} ${spec.viewBox.y} ${spec.viewBox.width} ${spec.viewBox.height}`}>
                 {renderKeys(whiteKeys, activeNotes, onNoteDownWrapper, onNoteUpWrapper)}
                 {renderKeys(blackKeys, activeNotes, onNoteDownWrapper, onNoteUpWrapper)}
