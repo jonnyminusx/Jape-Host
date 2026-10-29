@@ -31,7 +31,3 @@ export function createClapPanicEvents(): Uint8Array[] {
     makeEvent(0xb0, 120, 0),
   ]
 }
-
-export function createClapMidiEvent(message: Uint8Array): Uint8Array {
-  return makeEvent(message[0] ?? 0, message[1] ?? 0, message[2] ?? 0)
-}

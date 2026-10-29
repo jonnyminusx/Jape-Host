@@ -23,10 +23,6 @@ button {
   width: fit-content;
 }
 
-.midi {
-  margin-bottom: 1rem;
-}
-
 .keyboard {
   flex-wrap: wrap;
   gap: 0.5rem;

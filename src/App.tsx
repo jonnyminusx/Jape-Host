@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { kChainConfig } from './config/chain'
 import { buildChain, type BuiltChain } from './engine/chain'
 import { WclapRuntime } from './engine/runtime'
@@ -7,9 +7,6 @@ import {
   createClapNoteOnEvent,
   createClapPanicEvents,
 } from './midi/clapMidi'
-import { MidiBus } from './midi/midiBus'
-import { bindComputerKeyboard } from './midi/sources/computerKeyboard'
-import { connectWebMidi } from './midi/sources/webMidi'
 import { Keyboard } from './keyboard/Keyboard'
 import './App.css'
 
@@ -21,8 +18,6 @@ function App() {
   const [activeNotes, setActiveNotes] = useState<ReadonlySet<number>>(new Set())
   const [status, setStatus] = useState('Click start to load the host.')
   const [started, setStarted] = useState(false)
-  const [midiInputs, setMidiInputs] = useState<string[]>([])
-  const midiBus = useMemo(() => new MidiBus(), [])
   const [panicCount, setPanicCount] = useState(0)
 
   const panic = () => {
@@ -39,10 +34,6 @@ function App() {
     if (!started) {
       return
     }
-
-    let stopKeyboard: (() => void) | null = null
-    let stopWebMidi: (() => void) | null = null
-    let cancelled = false
 
     const start = async () => {
       try {
@@ -76,17 +67,6 @@ function App() {
           }
         }
 
-        midiBus.subscribe((midi) => {
-          chain.midiTarget.sendEvents([midi.bytes])
-        })
-
-        stopKeyboard = bindComputerKeyboard(midiBus)
-        stopWebMidi = await connectWebMidi(midiBus, (names) => {
-          if (!cancelled) {
-            setMidiInputs(names)
-          }
-        })
-
         window.addEventListener('blur', panic)
         setStatus('Ready')
       } catch (error) {
@@ -99,17 +79,14 @@ function App() {
     void start()
 
     return () => {
-      cancelled = true
       window.removeEventListener('blur', panic)
-      stopKeyboard?.()
-      stopWebMidi?.()
       panic()
       chainRef.current?.dispose()
       chainRef.current = null
       void audioContextRef.current?.close()
       audioContextRef.current = null
     }
-  }, [started, midiBus])
+  }, [started])
 
   const playNote = (note: number, velocity: number) => {
     setActiveNotes(prev => {
@@ -156,12 +133,6 @@ function App() {
           </button>
         )}
       </header>
-
-      <section className="midi">
-        <h2>MIDI inputs</h2>
-        <p>{midiInputs.length > 0 ? midiInputs.join(', ') : 'No device connected'}</p>
-        <p>Computer keyboard: A/W/S/E/D/F/T/G/Y/H/U/J/K</p>
-      </section>
 
       <section className="keyboard">
         <Keyboard
