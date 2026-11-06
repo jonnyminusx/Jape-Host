@@ -1,4 +1,6 @@
-const kOffsets: Map<string, number> = new Map([
+export type ComputerKey = string;
+
+const kOffsets: Map<ComputerKey, number> = new Map([
     ['a', 0],
     ['w', 1],
     ['s', 2],
@@ -14,7 +16,7 @@ const kOffsets: Map<string, number> = new Map([
     ['k', 12]
 ]);
 
-export function keyToNote(key: string, firstNote: number, lastNote: number): number | undefined {
+export function keyToNote(key: ComputerKey, firstNote: number, lastNote: number): number | undefined {
     const offset = kOffsets.get(key.toLowerCase());
 
     if (offset === undefined || offset > (lastNote - firstNote)) {

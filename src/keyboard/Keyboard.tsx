@@ -1,12 +1,10 @@
 import { useRef, useEffect, useState } from 'react'
 import { isBlackColour, buildKeyboardSpec, type Key } from "./layout";
 import { calculateVelocity } from "./pointer"
+import { keyToNote } from "./computerKeyboard"
+import { HeldNotes, toComputerKeyboardInput, toPointerInput, type Input, type InputHandler, type NoteHandler, type NoteVelocityHandler, type NoteVelocityInputHandler } from "./input"
 
 export type ActiveNotes = ReadonlySet<number>;
-type NoteHandler = (note: number) => void;
-type PointerHandler = (pointer: number) => void;
-type NoteVelocityHandler = (note: number, velocity: number) => void;
-type NoteVelocityPointerHandler = (note: number, velocity: number, pointer: number) => void;
 
 interface KeyboardProps {
     firstNote: number;
@@ -20,8 +18,8 @@ interface KeyboardProps {
 interface KeyRectProps {
     keyData: Key;
     isActive: boolean;
-    onNoteDown: NoteVelocityPointerHandler;
-    onNoteUp: PointerHandler;
+    onNoteDown: NoteVelocityInputHandler;
+    onNoteUp: InputHandler;
 }
 
 function calculateVelocityFromEvent(event: React.PointerEvent<SVGRectElement>) {
@@ -46,16 +44,16 @@ function KeyRect({ keyData, isActive, onNoteDown, onNoteUp }: KeyRectProps) {
                     return;
                 }
                 event.currentTarget.setPointerCapture(event.pointerId)
-                onNoteDown(keyData.note, calculateVelocityFromEvent(event), event.pointerId)
+                onNoteDown(keyData.note, calculateVelocityFromEvent(event), toPointerInput(event.pointerId))
             }}
-            onPointerUp={(event) => onNoteUp(event.pointerId)}
-            onPointerCancel={(event) => onNoteUp(event.pointerId)}
-            onLostPointerCapture={(event) => onNoteUp(event.pointerId)}
+            onPointerUp={(event) => onNoteUp(toPointerInput(event.pointerId))}
+            onPointerCancel={(event) => onNoteUp(toPointerInput(event.pointerId))}
+            onLostPointerCapture={(event) => onNoteUp(toPointerInput(event.pointerId))}
             onContextMenu={event => event.preventDefault()}
         />);
 }
 
-function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteVelocityPointerHandler, onNoteUp: PointerHandler) {
+function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteVelocityInputHandler, onNoteUp: InputHandler) {
     return keys.map(k => (<KeyRect
         key={k.note}
         keyData={k}
@@ -64,53 +62,57 @@ function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteVeloc
         onNoteUp={onNoteUp} />));
 }
 
-function noteIsPointedTo(note: number, map: Map<number, number>): boolean {
-    for (const candidateNote of map.values()) {
-        if (candidateNote === note) {
-            return true;
-        }
-    }
-    return false;
-}
-
 export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteDown, onNoteUp }: KeyboardProps) {
     const [computerKeyboardEnabled, setComputerKeyboardEnabled] = useState<boolean>(true);
-    const pointerToHeldNote = useRef<Map<number, number>>(new Map());
+    const heldNotes = useRef<HeldNotes>(new HeldNotes(onNoteDown, onNoteUp));
+
+    const onKeyDown = (event: KeyboardEvent) => {
+        const note = keyToNote(event.key, firstNote, lastNote);
+        if (note !== undefined) {
+            event.preventDefault();
+            heldNotes.current.onInputHeld(note, 100, toComputerKeyboardInput(event.key));
+        }
+    }
+
+    const onKeyUp = (event: KeyboardEvent) => {
+        const note = keyToNote(event.key, firstNote, lastNote);
+        if (note !== undefined) {
+            heldNotes.current.onInputReleased(toComputerKeyboardInput(event.key));
+        }
+    }
 
     useEffect(() => {
-        pointerToHeldNote.current.clear();
+        heldNotes.current.onNoteDown = onNoteDown;
+        heldNotes.current.onNoteUp = onNoteUp;
+    }, [onNoteDown, onNoteUp])
+
+    useEffect(() => {
+        heldNotes.current.releaseAll();
     }, [panicCount])
+
+    useEffect(() => {
+        if (computerKeyboardEnabled) {
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('keyup', onKeyUp);
+        }
+
+        return () => {
+            heldNotes.current.releaseComputerKeyboard();
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('keyup', onKeyUp);
+        }
+    }, [computerKeyboardEnabled, firstNote, lastNote])
 
     const spec = buildKeyboardSpec(firstNote, lastNote);
     const whiteKeys = spec.keys.filter(k => !isBlackColour(k.colour));
     const blackKeys = spec.keys.filter(k => isBlackColour(k.colour));
 
-    const onNoteDownWrapper: NoteVelocityPointerHandler = (note: number, velocity: number, pointerId: number) => {
-        const onNoteDownRequired = !noteIsPointedTo(note, pointerToHeldNote.current);
-
-        const potentiallyOrphanedNote = pointerToHeldNote.current.get(pointerId);
-        if (potentiallyOrphanedNote !== undefined && potentiallyOrphanedNote !== note) {
-            pointerToHeldNote.current.delete(pointerId);
-            if (!noteIsPointedTo(potentiallyOrphanedNote, pointerToHeldNote.current)) {
-                onNoteUp(potentiallyOrphanedNote);
-            }
-        }
-
-        pointerToHeldNote.current.set(pointerId, note);
-        if (onNoteDownRequired) {
-            onNoteDown(note, velocity);
-        }
+    const onNoteDownWrapper: NoteVelocityInputHandler = (note: number, velocity: number, input: Input) => {
+        heldNotes.current.onInputHeld(note, velocity, input);
     }
 
-    const onNoteUpWrapper: PointerHandler = (pointerId: number) => {
-        const pointedToNote = pointerToHeldNote.current.get(pointerId);
-        if (pointedToNote !== undefined) {
-            pointerToHeldNote.current.delete(pointerId);
-
-            if (!noteIsPointedTo(pointedToNote, pointerToHeldNote.current)) {
-                onNoteUp(pointedToNote);
-            }
-        }
+    const onNoteUpWrapper: InputHandler = (input: Input) => {
+        heldNotes.current.onInputReleased(input);
     }
 
     return (
