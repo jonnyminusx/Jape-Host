@@ -1,5 +1,7 @@
 import { lerp } from "../utility/utility"
 
+export type PointerId = number;
+
 export function calculateVelocity(y: number, top: number, height: number) {
     const maxVelocity = 127;
     const minVelocity = 1;
