@@ -29,7 +29,7 @@ describe('isBlackKey', () => {
 
 describe('buildKeyboardSpec', () => {
     describe('for notes 48 to 72', () => {
-        const spec = buildKeyboardSpec(48, 72);
+        const spec = buildKeyboardSpec(48, 72, false);
         const keys = spec.keys;
 
         test('has 15 white keys', () => {
@@ -64,7 +64,7 @@ describe('buildKeyboardSpec', () => {
 
     describe('viewBox', () => {
         test('contains leading black key', () => {
-            const viewBox = buildKeyboardSpec(61, 62).viewBox;
+            const viewBox = buildKeyboardSpec(61, 62, false).viewBox;
             expect(viewBox.x).toBe(-3);
             expect(viewBox.y).toBe(0);
             expect(viewBox.width).toBe(13);
@@ -72,7 +72,7 @@ describe('buildKeyboardSpec', () => {
         });
 
         test('contains trailing black key', () => {
-            const viewBox = buildKeyboardSpec(60, 61).viewBox;
+            const viewBox = buildKeyboardSpec(60, 61, false).viewBox;
             expect(viewBox.x).toBe(0);
             expect(viewBox.y).toBe(0);
             expect(viewBox.width).toBe(13);
@@ -81,14 +81,14 @@ describe('buildKeyboardSpec', () => {
     })
 
     test('places a lone white key at x = 0', () => {
-        const keys = buildKeyboardSpec(60, 60).keys;
+        const keys = buildKeyboardSpec(60, 60, false).keys;
         expect(keys).toHaveLength(1);
         expect(keys[0].colour).toBe("white");
         expect(keys[0].x).toBe(0);
     });
 
     test('centres a lone black key on x = 0', () => {
-        const keys = buildKeyboardSpec(61, 61).keys;
+        const keys = buildKeyboardSpec(61, 61, false).keys;
         expect(keys).toHaveLength(1);
 
         const key = keys[0];
