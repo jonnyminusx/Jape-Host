@@ -24,6 +24,9 @@ button {
 }
 
 .keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1rem;
@@ -35,6 +38,61 @@ button {
   max-width: 60rem;
   touch-action: none;
   user-select: none;
+}
+
+.computer-keyboard-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid rgba(255, 165, 0, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 165, 0, 0.06);
+  color: #bbb;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.computer-keyboard-toggle:hover {
+  border-color: rgba(255, 165, 0, 0.4);
+  background: rgba(255, 165, 0, 0.1);
+  color: #eee;
+}
+
+.computer-keyboard-toggle input[type="checkbox"] {
+  margin: 0;
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: orange;
+  cursor: pointer;
+}
+
+.rounded-button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(255, 165, 0, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 165, 0, 0.06);
+  color: #bbb;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.rounded-button:hover {
+  border-color: rgba(255, 165, 0, 0.4);
+  background: rgba(255, 165, 0, 0.1);
+  color: #eee;
+}
+
+.rounded-button:focus-visible {
+  outline: 2px solid orange;
+  outline-offset: 2px;
 }
 
 .plugin-panel {

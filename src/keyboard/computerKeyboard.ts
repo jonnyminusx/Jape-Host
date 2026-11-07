@@ -25,3 +25,12 @@ export function keyToNote(key: ComputerKey, firstNote: number, lastNote: number)
 
     return firstNote + offset;
 }
+
+export function noteToKey(noteOffset: number): string | undefined {
+    for (const [key, offset] of kOffsets.entries()) {
+        if (noteOffset === offset) {
+            return key;
+        }
+    }
+    return undefined;
+}

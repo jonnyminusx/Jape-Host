@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { isBlackColour, buildKeyboardSpec, type Key } from "./layout";
+import { isBlackColour, buildKeyboardSpec, type Key, type KeyLabel } from "./layout";
 import { calculateVelocity } from "./pointer"
 import { keyToNote } from "./computerKeyboard"
 import { HeldNotes, toComputerKeyboardInput, toPointerInput, type Input, type InputHandler, type NoteHandler, type NoteVelocityHandler, type NoteVelocityInputHandler } from "./input"
@@ -28,29 +28,50 @@ function calculateVelocityFromEvent(event: React.PointerEvent<SVGRectElement>) {
     return calculateVelocity(y, bb.top, bb.height);
 }
 
+function KeyLabelText({ label }: { label: KeyLabel }) {
+    return (
+        <text
+            x={label.x}
+            y={label.y}
+            fontSize={label.fontSize}
+            fill={label.fontColour}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="sans-serif"
+            pointerEvents="none"
+        >
+            {label.text}
+        </text>
+    );
+}
+
 function KeyRect({ keyData, isActive, onNoteDown, onNoteUp }: KeyRectProps) {
     return (
-        <rect
-            x={keyData.x}
-            y={0}
-            width={keyData.width}
-            height={keyData.height}
-            fill={isActive ? "orange" : keyData.colour}
-            stroke="#333"
-            strokeWidth={0.3}
-            rx="1"
-            onPointerDown={(event) => {
-                if (event.button !== 0 || event.ctrlKey) {
-                    return;
-                }
-                event.currentTarget.setPointerCapture(event.pointerId)
-                onNoteDown(keyData.note, calculateVelocityFromEvent(event), toPointerInput(event.pointerId))
-            }}
-            onPointerUp={(event) => onNoteUp(toPointerInput(event.pointerId))}
-            onPointerCancel={(event) => onNoteUp(toPointerInput(event.pointerId))}
-            onLostPointerCapture={(event) => onNoteUp(toPointerInput(event.pointerId))}
-            onContextMenu={event => event.preventDefault()}
-        />);
+        <>
+            <rect
+                x={keyData.x}
+                y={0}
+                width={keyData.width}
+                height={keyData.height}
+                fill={isActive ? "orange" : keyData.colour}
+                stroke="#333"
+                strokeWidth={0.3}
+                rx="1"
+                onPointerDown={(event) => {
+                    if (event.button !== 0 || event.ctrlKey) {
+                        return;
+                    }
+                    event.currentTarget.setPointerCapture(event.pointerId)
+                    onNoteDown(keyData.note, calculateVelocityFromEvent(event), toPointerInput(event.pointerId))
+                }}
+                onPointerUp={(event) => onNoteUp(toPointerInput(event.pointerId))}
+                onPointerCancel={(event) => onNoteUp(toPointerInput(event.pointerId))}
+                onLostPointerCapture={(event) => onNoteUp(toPointerInput(event.pointerId))}
+                onContextMenu={event => event.preventDefault()}
+            />
+            {keyData.label !== undefined && <KeyLabelText label={keyData.label} />}
+        </>
+    );
 }
 
 function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteVelocityInputHandler, onNoteUp: InputHandler) {
@@ -63,7 +84,7 @@ function renderKeys(keys: Key[], activeNotes: ActiveNotes, onNoteDown: NoteVeloc
 }
 
 export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteDown, onNoteUp }: KeyboardProps) {
-    const [computerKeyboardEnabled, setComputerKeyboardEnabled] = useState<boolean>(true);
+    const [computerKeyboardEnabled, setComputerKeyboardEnabled] = useState<boolean>(false);
     const heldNotes = useRef<HeldNotes>(new HeldNotes(onNoteDown, onNoteUp));
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -103,7 +124,7 @@ export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteD
         }
     }, [computerKeyboardEnabled, firstNote, lastNote])
 
-    const spec = buildKeyboardSpec(firstNote, lastNote);
+    const spec = buildKeyboardSpec(firstNote, lastNote, computerKeyboardEnabled);
     const whiteKeys = spec.keys.filter(k => !isBlackColour(k.colour));
     const blackKeys = spec.keys.filter(k => isBlackColour(k.colour));
 
@@ -117,7 +138,7 @@ export function Keyboard({ firstNote, lastNote, activeNotes, panicCount, onNoteD
 
     return (
         <>
-            <label>
+            <label className="computer-keyboard-toggle">
                 <input type="checkbox" checked={computerKeyboardEnabled} onChange={e => setComputerKeyboardEnabled(e.target.checked)} />
                 Computer Keyboard
             </label>

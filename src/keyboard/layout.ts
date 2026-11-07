@@ -1,9 +1,27 @@
+import { noteToKey } from "./computerKeyboard";
+
 const kWhiteKeyWidth = 10;
 const kWhiteKeyHeight = 50;
 const kBlackKeyScaleFactor = 0.6;
 const kBlackPitchClasses = new Set([1, 3, 6, 8, 10]);
 
+const kWhiteKeyLabelFontSize = kWhiteKeyWidth / 2;
+const kWhiteKeyLabelX = kWhiteKeyLabelFontSize;
+const kWhiteKeyLabelY = kWhiteKeyHeight - kWhiteKeyLabelX;
+
+const kBlackKeyLabelFontSize = (kWhiteKeyWidth * kBlackKeyScaleFactor) / 2;
+const kBlackKeyLabelX = kBlackKeyLabelFontSize;
+const kBlackKeyLabelY = (kWhiteKeyHeight * kBlackKeyScaleFactor) - kBlackKeyLabelX;
+
 export type KeyColour = "black" | "white";
+
+export interface KeyLabel {
+    readonly x: number;
+    readonly y: number;
+    readonly fontSize: number;
+    readonly fontColour: string;
+    readonly text: string;
+}
 
 export interface Key {
     readonly note: number;
@@ -11,6 +29,7 @@ export interface Key {
     readonly width: number;
     readonly height: number;
     readonly colour: KeyColour;
+    readonly label: KeyLabel | undefined;
 }
 
 export interface ViewBox {
@@ -45,7 +64,31 @@ function calculateViewBox(startNote: number, endNote: number, nWhiteKeys: number
     return { x, y, width, height };
 }
 
-export function buildKeyboardSpec(startNote: number, endNote: number): KeyboardSpec {
+export function createKeyLabel(keyX: number, isBlack: boolean, keyOffset: number): KeyLabel | undefined {
+    const computerKey = noteToKey(keyOffset);
+
+    if (computerKey === undefined) {
+        return undefined;
+    }
+
+    const text = computerKey.toUpperCase();
+
+    if (isBlack) {
+        const x = keyX + kBlackKeyLabelX;
+        const y = kBlackKeyLabelY;
+        const fontSize = kBlackKeyLabelFontSize;
+        const fontColour = "#CCCCCC";
+        return { x, y, fontSize, fontColour, text };
+    }
+
+    const x = keyX + kWhiteKeyLabelX;
+    const y = kWhiteKeyLabelY;
+    const fontSize = kWhiteKeyLabelFontSize;
+    const fontColour = "#666666";
+    return { x, y, fontSize, fontColour, text };
+}
+
+export function buildKeyboardSpec(startNote: number, endNote: number, showLabels: boolean): KeyboardSpec {
     const keys: Key[] = [];
     const blackWidth = kWhiteKeyWidth * kBlackKeyScaleFactor;
     const blackHeight = kWhiteKeyHeight * kBlackKeyScaleFactor;
@@ -54,11 +97,13 @@ export function buildKeyboardSpec(startNote: number, endNote: number): KeyboardS
     for (let note = startNote; note <= endNote; ++note) {
         if (isBlackKey(note)) {
             const x = (kWhiteKeyWidth * whiteIndex) - blackWidth / 2;
-            keys.push({ note, x, width: blackWidth, height: blackHeight, colour: "black" });
+            const label = showLabels ? createKeyLabel(x, true, note - startNote) : undefined;
+            keys.push({ note, x, width: blackWidth, height: blackHeight, colour: "black", label });
         }
         else {
             const x = kWhiteKeyWidth * whiteIndex;
-            keys.push({ note, x, width: kWhiteKeyWidth, height: kWhiteKeyHeight, colour: "white" });
+            const label = showLabels ? createKeyLabel(x, false, note - startNote) : undefined;
+            keys.push({ note, x, width: kWhiteKeyWidth, height: kWhiteKeyHeight, colour: "white", label });
             ++whiteIndex;
         }
     }

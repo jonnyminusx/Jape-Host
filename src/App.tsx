@@ -124,11 +124,11 @@ function App() {
         <h1>Jape Host</h1>
         <p>{status}</p>
         {!started ? (
-          <button type="button" onClick={() => setStarted(true)}>
+          <button className="rounded-button" type="button" onClick={() => setStarted(true)}>
             Start audio
           </button>
         ) : (
-          <button type="button" onClick={panic}>
+          <button className="rounded-button" type="button" onClick={panic}>
             Panic (all notes off)
           </button>
         )}
